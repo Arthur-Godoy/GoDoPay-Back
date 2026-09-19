@@ -19,7 +19,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, HasUuids, Notifiable;
 
-    public function account(): HasMany
+    public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
     }
@@ -36,6 +36,10 @@ class User extends Authenticatable
 
     public function switchAccount(Account $account): bool
     {
+        if ($account->user->id !== $this->id) {
+            return false;
+        }
+
         return $this->fill(['current_account_id' => $account->id])->save();
     }
 

@@ -18,12 +18,13 @@ class CreateAccount
     public function createAccount(): Account
     {
         return DB::transaction(function () {
-            $account = $this->user->account()->create([
+            $account = Account::create([
                 'nickname' => $this->nickname,
                 'agency' => '0001',
                 'balance' => 0,
                 'number' => $this->generateNumber(),
                 'digit' => (string) random_int(0, 9),
+                'user_id' => $this->user->id
             ]);
 
             $this->user->switchAccount($account);

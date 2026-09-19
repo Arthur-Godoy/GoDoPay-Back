@@ -9,10 +9,24 @@ use App\Models\Account;
 use App\Models\Transaction;
 use App\Services\CreateAccount;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AccountController extends Controller
 {
+    public function list(Request $request): JsonResponse
+    {
+        try {
+            $accounts = $request->user()->accounts;
+
+            return response()->json([
+                $accounts
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(["Error while trying to list accounts"], 400);
+        }
+    }
+
     public function store(StoreAccountRequest $request): JsonResponse
     {
         $createAccountService = new CreateAccount(
@@ -25,7 +39,7 @@ class AccountController extends Controller
         return response()->json($account, 201);
     }
 
-    public function deposit(Account $account, DepositRequest $request)
+    public function deposit(Account $account, DepositRequest $request): JsonResponse
     {
         DB::beginTransaction();
 

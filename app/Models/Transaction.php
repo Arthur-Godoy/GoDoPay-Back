@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\TransactionType;
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +36,24 @@ class Transaction extends Model
     public function isReturnedByTransaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class, 'is_returned_by_transaction_id');
+    }
+
+    #[Scope]
+    protected function involvingAccount(Builder $query, Account $account): void
+    {
+        $query->where(function (Builder $query) use ($account) {
+            $query->where('account_payer_id', $account->id)
+                ->orWhere('account_receiver_id', $account->id);
+        });
+    }
+
+    #[Scope]
+    protected function filter(Builder $query, array $filters): void
+    {
+        $query->when($filters['type'], fn (Builder $query, string $type) => $query->where('type', $type))
+            ->when($filters['start_date'], fn (Builder $query, string $date) => $query->whereDate('created_at', '>=', $date))
+            ->when($filters['end_date'], fn (Builder $query, string $date) => $query->whereDate('created_at', '<=', $date))
+            ->orderBy($filters['order_by'], $filters['order']);
     }
 
     /**
