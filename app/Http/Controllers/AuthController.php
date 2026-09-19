@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
@@ -55,6 +56,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'created_at' => $user->created_at,
+            'current_account_id' => $user->current_account_id,
             'updated_at' => $user->updated_at,
             'access_token' => $accessToken->plainTextToken,
             'refresh_token' => $refreshToken->plainTextToken,
@@ -81,13 +83,13 @@ class AuthController extends Controller
         $refreshToken = $user->currentAccessToken();
 
         $user->tokens()->whereKey($this->pairedAccessTokenId($refreshToken))->delete();
-        $refreshToken->delete();
 
-        [$accessToken, $refreshToken] = $this->createTokenPair($user);
+        $accessToken = $this->createAccessToken($user);
+
+        $refreshToken->update(['name' => $this->refreshTokenName($accessToken->accessToken)]);
 
         return response()->json([
             'access_token' => $accessToken->plainTextToken,
-            'refresh_token' => $refreshToken->plainTextToken,
         ]);
     }
 
@@ -114,11 +116,7 @@ class AuthController extends Controller
 
     private function createTokenPair(User $user): array
     {
-        $accessToken = $user->createToken(
-            'access',
-            ['access'],
-            now()->addMinutes(config('sanctum.access_token_expiration')),
-        );
+        $accessToken = $this->createAccessToken($user);
 
         $refreshToken = $user->createToken(
             $this->refreshTokenName($accessToken->accessToken),
@@ -127,6 +125,15 @@ class AuthController extends Controller
         );
 
         return [$accessToken, $refreshToken];
+    }
+
+    private function createAccessToken(User $user): NewAccessToken
+    {
+        return $user->createToken(
+            'access',
+            ['access'],
+            now()->addMinutes(config('sanctum.access_token_expiration')),
+        );
     }
 
     private function refreshTokenName(PersonalAccessToken $accessToken): string
