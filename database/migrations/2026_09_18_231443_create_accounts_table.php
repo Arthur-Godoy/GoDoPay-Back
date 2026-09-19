@@ -21,6 +21,10 @@ return new class extends Migration
             $table->string('nickname');
             $table->timestamps();
         });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('current_account_id')->references('id')->on('accounts')->nullOnDelete();
+        });
     }
 
     /**
@@ -28,6 +32,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['current_account_id']);
+        });
+
         Schema::dropIfExists('accounts');
     }
 };

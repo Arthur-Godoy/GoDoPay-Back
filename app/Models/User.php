@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'document', 'document_type'])]
+#[Fillable(['name', 'email', 'password', 'document', 'document_type', 'current_account_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -26,6 +27,16 @@ class User extends Authenticatable
     public function contacts(): HasMany
     {
         return $this->hasMany(Contact::class);
+    }
+
+    public function currentAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'current_account_id');
+    }
+
+    public function switchAccount(Account $account): bool
+    {
+        return $this->fill(['current_account_id' => $account->id])->save();
     }
 
     /**

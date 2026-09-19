@@ -13,4 +13,5 @@ Route::post('/refresh', [AuthController::class, 'refresh'])->middleware(['auth:s
 Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::patch('/switch-account/{account}', [AuthController::class, 'switchAccount'])->middleware('can:update,account')->name('auth.switch-account');
 });

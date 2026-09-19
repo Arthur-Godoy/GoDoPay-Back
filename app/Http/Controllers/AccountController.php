@@ -7,6 +7,7 @@ use App\Http\Requests\Account\DepositRequest;
 use App\Http\Requests\Account\StoreAccountRequest;
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Services\CreateAccount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -14,24 +15,14 @@ class AccountController extends Controller
 {
     public function store(StoreAccountRequest $request): JsonResponse
     {
-        $account = $request->user()->account()->create([
-            'nickname' => $request->validated('nickname'),
-            'agency' => '0001',
-            'balance' => 0,
-            'number' => $this->generateNumber(),
-            'digit' => (string) random_int(0, 9),
-        ]);
+        $createAccountService = new CreateAccount(
+            $request->user(),
+            $request->validated('nickname')
+        );
+
+        $account = $createAccountService->createAccount();
 
         return response()->json($account, 201);
-    }
-
-    private function generateNumber(): string
-    {
-        do {
-            $number = str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
-        } while (Account::where('number', $number)->exists());
-
-        return $number;
     }
 
     public function deposit(Account $account, DepositRequest $request)

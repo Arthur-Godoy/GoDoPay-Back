@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\Account;
 use App\Models\User;
+use App\Services\CreateAccount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -15,7 +18,14 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create($request->validated());
+        $user = DB::transaction(function () use ($request) {
+            $user = User::create($request->validated());
+
+            $createAccountService = new CreateAccount($user, CreateAccount::DEFAULT_NICKNAME);
+            $createAccountService->createAccount();
+
+            return $user;
+        });
 
         [$accessToken, $refreshToken] = $this->createTokenPair($user);
 
@@ -53,14 +63,16 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        return response()->json($this->userPayload($request->user()));
+    }
+
+    public function switchAccount(Request $request, Account $account): JsonResponse
+    {
         $user = $request->user();
 
-        return response()->json([
-            'name' => $user->name,
-            'email' => $user->email,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-        ]);
+        $user->switchAccount($account);
+
+        return response()->json($this->userPayload($user));
     }
 
     public function refresh(Request $request): JsonResponse
@@ -87,6 +99,17 @@ class AuthController extends Controller
         $accessToken->delete();
 
         return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    private function userPayload(User $user): array
+    {
+        return [
+            'name' => $user->name,
+            'email' => $user->email,
+            'current_account_id' => $user->current_account_id,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+        ];
     }
 
     private function createTokenPair(User $user): array
