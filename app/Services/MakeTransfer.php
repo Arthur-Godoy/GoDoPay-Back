@@ -2,22 +2,23 @@
 
 namespace App\Services;
 
-use App\Enums\TransactionType;
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\NotAccountOwnerException;
 use App\Models\Account;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Traits\Transfer;
 use Illuminate\Support\Facades\DB;
 
-class Transfer
+class MakeTransfer
 {
+  use Transfer;
 
   public function __construct(
-    public Account $payer,
-    public Account $receiver,
+    protected Account $payer,
+    protected Account $receiver,
     private User $user,
-    private int $amount
+    protected int $amount
   ) {}
 
   public function makeTransfer(): Transaction
@@ -27,15 +28,7 @@ class Transfer
       $this->lockAccounts();
       $this->canTransfer();
 
-      $transaction = Transaction::create([
-        "type" => TransactionType::Transfer->value,
-        "account_payer_id" => $this->payer->id,
-        "account_receiver_id" => $this->receiver->id,
-        "amount" => $this->amount,
-      ]);
-
-      $this->payer->debit($this->amount);
-      $this->receiver->credit($this->amount);
+      $transaction = $this->executeTransfer();
 
       DB::commit();
 
@@ -44,17 +37,6 @@ class Transfer
       DB::rollBack();
       throw $e;
     }
-  }
-
-  private function lockAccounts(): void
-  {
-    $accounts = Account::whereIn("id", [$this->payer->id, $this->receiver->id])
-      ->lockForUpdate()
-      ->get()
-      ->keyBy("id");
-
-    $this->payer = $accounts[$this->payer->id];
-    $this->receiver = $accounts[$this->receiver->id];
   }
 
   private function canTransfer(): void
