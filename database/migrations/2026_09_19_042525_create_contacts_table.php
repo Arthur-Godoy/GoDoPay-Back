@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('accounts', function (Blueprint $table) {
+        Schema::create('contacts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('user_id');
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('account_id')->constrained('accounts');
             $table->string('agency', 4);
-            $table->string('number')->unique();
+            $table->string('number');
             $table->char('digit', 1);
-            $table->integer('balance')->default(0);
-            $table->string('nickname');
             $table->timestamps();
+
+            $table->unique(['user_id', 'account_id']);
         });
     }
 
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('accounts');
+        Schema::dropIfExists('contacts');
     }
 };

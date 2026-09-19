@@ -15,8 +15,8 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->enum('type', array_column(TransactionType::cases(), 'value'))->default(TransactionType::Transfer->value);
-            $table->foreignId('account_payer_id')->nullable()->constrained('accounts');
-            $table->foreignId('account_receiver_id')->constrained('accounts');
+            $table->foreignUuid('account_payer_id')->nullable()->constrained('accounts');
+            $table->foreignUuid('account_receiver_id')->constrained('accounts');
             $table->integer('amount');
             $table->boolean('was_returned')->default(false);
             $table->timestamp('returned_at')->nullable();

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Account;
+use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,16 @@ class AccountSeeder extends Seeder
         Account::factory()->create([
             'user_id' => $user->id,
             'nickname' => 'Conta Padrão',
+        ]);
+
+        $secondAccount = Account::factory()->create([
+            'user_id' => $user->id,
+            'nickname' => 'Conta Secundária',
+        ]);
+
+        Contact::factory()->create([
+            'user_id' => $user->id,
+            'account_id' => $secondAccount->id,
         ]);
     }
 }

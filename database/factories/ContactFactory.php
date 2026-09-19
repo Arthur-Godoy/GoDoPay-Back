@@ -1,0 +1,37 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Account;
+use App\Models\Contact;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<Contact>
+ */
+class ContactFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'user_id' => User::factory(),
+            'account_id' => Account::factory(),
+        ];
+    }
+
+    /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterMaking(function (Contact $contact) {
+            $contact->fill($contact->account->only(['agency', 'number', 'digit']));
+        });
+    }
+}

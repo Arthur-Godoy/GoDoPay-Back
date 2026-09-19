@@ -21,6 +21,9 @@ class AccountFactory extends Factory
         return [
             'user_id' => User::factory(),
             'nickname' => fake()->words(2, true),
+            'agency' => '0001',
+            'number' => fake()->unique()->numerify('########'),
+            'digit' => (string) fake()->randomDigit(),
             'balance' => 0,
         ];
     }

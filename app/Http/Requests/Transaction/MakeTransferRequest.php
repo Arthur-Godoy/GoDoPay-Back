@@ -29,11 +29,14 @@ class MakeTransferRequest extends FormRequest
             'account_payer_id' => [
                 Rule::requiredIf($this->input('type') === TransactionType::Transfer->value),
                 Rule::prohibitedIf($this->input('type') === TransactionType::Deposit->value),
-                'integer',
+                'uuid',
                 'exists:accounts,id',
-                'different:account_receiver_id',
             ],
-            'account_receiver_id' => ['required', 'integer', 'exists:accounts,id'],
+            'contact_id' => [
+                'required',
+                'uuid',
+                'exists:contacts,id'
+            ],
             'amount' => ['required', 'integer', 'min:1'],
         ];
     }
