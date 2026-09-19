@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TransactionType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +14,8 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('account_payer_id')->constrained('accounts');
+            $table->enum('type', array_column(TransactionType::cases(), 'value'))->default(TransactionType::Transfer->value);
+            $table->foreignId('account_payer_id')->nullable()->constrained('accounts');
             $table->foreignId('account_receiver_id')->constrained('accounts');
             $table->integer('amount');
             $table->boolean('was_returned')->default(false);

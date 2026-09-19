@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -19,6 +20,7 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
+            'type' => TransactionType::Transfer,
             'account_payer_id' => Account::factory(),
             'account_receiver_id' => Account::factory(),
             'amount' => fake()->numberBetween(100, 100000),
@@ -37,6 +39,14 @@ class TransactionFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'was_returned' => true,
             'returned_at' => now(),
+        ]);
+    }
+
+    public function deposit(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => TransactionType::Deposit,
+            'account_payer_id' => null,
         ]);
     }
 }
