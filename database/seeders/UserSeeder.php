@@ -18,6 +18,8 @@ class UserSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'document' => '12345678909',
+            'document_type' => 'cpf',
             'password' => '123456',
         ]);
     }
