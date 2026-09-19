@@ -2,64 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InsufficientBalanceException;
+use App\Exceptions\NotAccountOwnerException;
+use App\Http\Requests\Transaction\MakeTransferRequest;
+use App\Models\Account;
 use App\Models\Transaction;
+use App\Services\Transfer;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function transfer(MakeTransferRequest $request): JsonResponse
     {
-        //
+        $payer = Account::whereId($request['account_payer_id'])->firstOrFail();
+        $receiver = Account::whereId($request['account_receiver_id'])->firstOrFail();
+
+        $transferService = new Transfer($payer, $receiver, $request->user(), $request['amount']);
+
+        $transaction = $transferService->makeTransfer();
+
+        try {
+            return response()->json($transaction, 200);
+        } catch (InsufficientBalanceException $e) {
+            return response()->json([$e->getMessage()], 400);
+        } catch (NotAccountOwnerException $e) {
+            return response()->json([$e->getMessage()], 403);
+        } catch (\Exception $e) {
+            return response()->json(["Error while processing the transfer"], 400);
+        }
+
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function deposit(Request $request)
     {
-        //
+        
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Transaction $transaction)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Transaction $transaction)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Transaction $transaction)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Transaction $transaction)
-    {
-        //
+        
     }
 }
