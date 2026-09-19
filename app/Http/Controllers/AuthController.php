@@ -56,8 +56,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'created_at' => $user->created_at,
-            'current_account_id' => $user->current_account_id,
-            'updated_at' => $user->updated_at,
+            'current_account' => $user->currentAccount,
             'access_token' => $accessToken->plainTextToken,
             'refresh_token' => $refreshToken->plainTextToken,
         ], 200);
@@ -65,7 +64,14 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($this->userPayload($request->user()));
+        $user = $request->user();
+
+        return response()->json([
+            'name' => $user->name,
+            'email' => $user->email,
+            'created_at' => $user->created_at,
+            'current_account' => $user->currentAccount,
+        ], 200);
     }
 
     public function switchAccount(Request $request, Account $account): JsonResponse
@@ -74,7 +80,12 @@ class AuthController extends Controller
 
         $user->switchAccount($account);
 
-        return response()->json($this->userPayload($user));
+        return response()->json([
+            'name' => $user->name,
+            'email' => $user->email,
+            'created_at' => $user->created_at,
+            'current_account' => $user->currentAccount,
+        ], 200);
     }
 
     public function refresh(Request $request): JsonResponse
@@ -101,17 +112,6 @@ class AuthController extends Controller
         $accessToken->delete();
 
         return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
-    private function userPayload(User $user): array
-    {
-        return [
-            'name' => $user->name,
-            'email' => $user->email,
-            'current_account_id' => $user->current_account_id,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-        ];
     }
 
     private function createTokenPair(User $user): array
