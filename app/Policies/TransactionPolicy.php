@@ -4,22 +4,31 @@ namespace App\Policies;
 
 use App\Models\Transaction;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class TransactionPolicy
 {
     /**
      * Determine whether the user can view the model.
      */
-    public function revert(User $user, Transaction $transaction): bool
+    public function revert(User $user, Transaction $transaction): Response
     {
-        return $transaction->accountReceiver->user_id === $user->id;
+        return $transaction->accountReceiver->user_id === $user->id
+            ? Response::allow()
+            : Response::deny('Apenas quem recebeu a transação pode devolvê-la');
     }
 
-    public function show(User $user, Transaction $transaction): bool
+    public function show(User $user, Transaction $transaction): Response
     {
-        return $user->accounts()
-            ->where('id', $transaction->accountPayer?->id)
-            ->orWhere('id', $transaction->accountReceiver->id)
+        $belongsToUser = $user->accounts()
+            ->whereIn('id', array_filter([
+                $transaction->account_payer_id,
+                $transaction->account_receiver_id,
+            ]))
             ->exists();
+
+        return $belongsToUser
+            ? Response::allow()
+            : Response::deny('Você não tem acesso a esta transação');
     }
 }

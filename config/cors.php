@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', (string) env('FRONT_URL', 'http://localhost:3000')),
+    'allowed_origins' => explode(',', (string) env('FRONT_URL')),
 
     'allowed_origins_patterns' => [],
 

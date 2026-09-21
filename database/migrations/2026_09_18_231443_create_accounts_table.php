@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('agency', 4);
             $table->string('number')->unique();
             $table->char('digit', 1);
-            $table->integer('balance')->default(0);
+            $table->bigInteger('balance')->default(0);
             $table->string('nickname');
             $table->timestamps();
         });

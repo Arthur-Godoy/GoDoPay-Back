@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('type', array_column(TransactionType::cases(), 'value'))->default(TransactionType::Transfer->value);
             $table->foreignUuid('account_payer_id')->nullable()->constrained('accounts');
             $table->foreignUuid('account_receiver_id')->constrained('accounts');
-            $table->integer('amount');
+            $table->bigInteger('amount');
             $table->boolean('was_returned')->default(false);
             $table->timestamp('returned_at')->nullable();
             $table->foreignUuid('return_of_transaction_id')->nullable()->constrained('transactions');

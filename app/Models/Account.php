@@ -17,6 +17,9 @@ class Account extends Model
     /** @use HasFactory<AccountFactory> */
     use HasFactory, HasUuids;
 
+    /** Teto do BIGINT signed do MySQL, em centavos. */
+    public const int MAX_AMOUNT_IN_CENTS = 9223372036854775807;
+
     public function credit(int $amount): bool
     {
         $account = $this->lockForUpdate()->find($this->id);

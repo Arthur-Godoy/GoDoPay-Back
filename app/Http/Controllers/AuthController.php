@@ -23,7 +23,9 @@ class AuthController extends Controller
             $user = User::create($request->validated());
 
             $createAccountService = new CreateAccount($user, CreateAccount::DEFAULT_NICKNAME);
-            $createAccountService->createAccount();
+            $createdAccount = $createAccountService->createAccount();
+
+            $user->switchAccount($createdAccount);
 
             return $user;
         });
@@ -49,6 +51,8 @@ class AuthController extends Controller
         if (! $user || ! Hash::check($request->validated('password'), $user->password)) {
             return response()->json('E-mail ou senha incorretos', 403);
         }
+
+        $user->populateCurrentAccountIfNull();
 
         [$accessToken, $refreshToken] = $this->createTokenPair($user);
 
@@ -92,6 +96,8 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $refreshToken = $user->currentAccessToken();
+
+        $user->populateCurrentAccountIfNull();
 
         $user->tokens()->whereKey($this->pairedAccessTokenId($refreshToken))->delete();
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Account;
 
+use App\Models\Account;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,7 +24,7 @@ class DepositRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'amount' => ['required', 'integer', 'min:1']
+            'amount' => ['required', 'integer', 'min:1', 'max:'.Account::MAX_AMOUNT_IN_CENTS],
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Transaction;
 
 use App\Enums\TransactionType;
+use App\Models\Account;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -35,9 +36,9 @@ class MakeTransferRequest extends FormRequest
             'contact_id' => [
                 'required',
                 'uuid',
-                'exists:contacts,id'
+                'exists:contacts,id',
             ],
-            'amount' => ['required', 'integer', 'min:1'],
+            'amount' => ['required', 'integer', 'min:1', 'max:'.Account::MAX_AMOUNT_IN_CENTS],
         ];
     }
 }

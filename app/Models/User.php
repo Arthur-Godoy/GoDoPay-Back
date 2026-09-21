@@ -43,6 +43,13 @@ class User extends Authenticatable
         return $this->fill(['current_account_id' => $account->id])->save();
     }
 
+    public function populateCurrentAccountIfNull(): void
+    {
+        if (empty($this->current_account_id)) {
+            $this->switchAccount($this->accounts()->first());
+        }
+    }
+
     /**
      * Get the attributes that should be cast.
      *
