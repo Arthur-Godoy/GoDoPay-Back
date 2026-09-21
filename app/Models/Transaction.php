@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\TransactionType;
+use App\Observers\TransactionObserver;
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -12,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([TransactionObserver::class])]
 #[Fillable(['type', 'account_payer_id', 'account_receiver_id', 'amount', 'was_returned', 'returned_at', 'return_of_transaction_id', 'is_returned_by_transaction_id'])]
 class Transaction extends Model
 {

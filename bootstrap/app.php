@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -27,6 +28,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->report(function (Throwable $e) {
+            Log::error($e->getMessage(), [
+                'exception' => $e::class,
+                'file' => $e->getFile().':'.$e->getLine(),
+                'url' => request()->fullUrl(),
+                'method' => request()->method(),
+                'user_id' => request()->user()?->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return false;
+        });
 
         $exceptions->render(function (AuthorizationException $e) {
             return response()->json([
