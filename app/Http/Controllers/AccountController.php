@@ -29,14 +29,18 @@ class AccountController extends Controller
 
     public function store(StoreAccountRequest $request): JsonResponse
     {
-        $createAccountService = new CreateAccount(
-            $request->user(),
-            $request->validated('nickname')
-        );
-
-        $account = $createAccountService->createAccount();
-
-        return response()->json($account, 201);
+        try {
+            $createAccountService = new CreateAccount(
+                $request->user(),
+                $request->validated('nickname')
+            );
+    
+            $account = $createAccountService->createAccount();
+    
+            return response()->json($account, 201);
+        } catch(\Exception $e) {
+            return response()->json("Erro ao criar conta", 400);
+        }
     }
 
     public function deposit(Account $account, DepositRequest $request): JsonResponse
