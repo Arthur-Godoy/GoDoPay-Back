@@ -20,10 +20,10 @@ class AccountController extends Controller
             $accounts = $request->user()->accounts;
 
             return response()->json([
-                $accounts
+                $accounts,
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(["Error while trying to list accounts"], 400);
+            return response()->json('Não foi possível carregar suas contas', 400);
         }
     }
 
@@ -45,9 +45,9 @@ class AccountController extends Controller
 
         try {
             $transaction = Transaction::create([
-                "type" => TransactionType::Deposit->value,
-                "account_receiver_id" => $account->id,
-                "amount" => $request['amount']
+                'type' => TransactionType::Deposit->value,
+                'account_receiver_id' => $account->id,
+                'amount' => $request['amount'],
             ]);
 
             $account->credit($request['amount']);
@@ -55,13 +55,13 @@ class AccountController extends Controller
             DB::commit();
 
             return response()->json([
-                $transaction
+                $transaction,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
-                "Error while processing deposit"
+                'Error while processing deposit',
             ], 400);
         }
     }

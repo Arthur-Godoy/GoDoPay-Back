@@ -8,33 +8,35 @@ use App\Models\Transaction;
 
 trait Transfer
 {
-  protected Account $payer;
-  protected Account $receiver;
-  protected int $amount;
+    protected Account $payer;
 
-  protected function lockAccounts(): void
-  {
-    $accounts = Account::whereIn("id", [$this->payer->id, $this->receiver->id])
-      ->lockForUpdate()
-      ->get()
-      ->keyBy("id");
+    protected Account $receiver;
 
-    $this->payer = $accounts[$this->payer->id];
-    $this->receiver = $accounts[$this->receiver->id];
-  }
+    protected int $amount;
 
-  protected function executeTransfer(): Transaction
-  {
-    $transaction = Transaction::create([
-      "type" => TransactionType::Transfer->value,
-      "account_payer_id" => $this->payer->id,
-      "account_receiver_id" => $this->receiver->id,
-      "amount" => $this->amount,
-    ]);
+    protected function lockAccounts(): void
+    {
+        $accounts = Account::whereIn('id', [$this->payer->id, $this->receiver->id])
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
 
-    $this->payer->debit($this->amount);
-    $this->receiver->credit($this->amount);
+        $this->payer = $accounts[$this->payer->id];
+        $this->receiver = $accounts[$this->receiver->id];
+    }
 
-    return $transaction;
-  }
+    protected function executeTransfer(): Transaction
+    {
+        $transaction = Transaction::create([
+            'type' => TransactionType::Transfer->value,
+            'account_payer_id' => $this->payer->id,
+            'account_receiver_id' => $this->receiver->id,
+            'amount' => $this->amount,
+        ]);
+
+        $this->payer->debit($this->amount);
+        $this->receiver->credit($this->amount);
+
+        return $transaction;
+    }
 }

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'account_id', 'agency', 'number', 'digit'])]
+#[Fillable(['user_id', 'account_id'])]
 class Contact extends Model
 {
     /** @use HasFactory<ContactFactory> */
