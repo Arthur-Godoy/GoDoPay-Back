@@ -8,4 +8,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/transactions', [TransactionController::class, 'list'])->name('transaction.list');
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->middleware('can:show,transaction')->name('transaction.show');
     Route::post('/return/{transaction}', [TransactionController::class, 'revert'])->middleware(['can:revert,transaction', 'can:show,transaction'])->name('transaction.revert');
+    Route::post('/transactions/{transaction}/solicitate', [TransactionController::class, 'createRevertSolicitation'])->middleware('can:solicitateRevert,transaction')->name('transaction.revert.solicitate');
 });

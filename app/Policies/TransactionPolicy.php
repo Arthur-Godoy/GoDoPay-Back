@@ -31,4 +31,11 @@ class TransactionPolicy
             ? Response::allow()
             : Response::deny('Você não tem acesso a esta transação');
     }
+
+    public function solicitateRevert(User $user, Transaction $transaction): Response
+    {
+        return $transaction->accountPayer->user_id === $user->id
+           ? Response::allow()
+           : Response::deny('Apenas quem pagou a transação pode solicitar uma devolução');
+    }
 }

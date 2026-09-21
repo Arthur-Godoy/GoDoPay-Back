@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function list(Request $request): JsonResponse
     {
         try {
             $contacts = $request->user()->contacts()
@@ -18,7 +18,7 @@ class ContactController extends Controller
                 ->with(
                     [
                         'account:id,user_id,nickname,agency,number,digit',
-                        'account.user:id,name'
+                        'account.user:id,name',
                     ])
                 ->get();
 
@@ -33,15 +33,15 @@ class ContactController extends Controller
         try {
             $account = Account::where($request->validated())->first();
 
-            if (!$account) {
-                return response()->json('Não foi possível encontrar a conta informada', 400);    
+            if (! $account) {
+                return response()->json('Não foi possível encontrar a conta informada', 400);
             }
 
             $contact = Contact::firstOrCreate([
                 'account_id' => $account->id,
                 'user_id' => $request->user()->id,
             ]);
-    
+
             return response()->json($contact, 201);
         } catch (\Exception $e) {
             return response()->json('Não foi possível adicionar o contato', 400);

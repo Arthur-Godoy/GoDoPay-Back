@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\AlreadyReturnedException;
-use App\Exceptions\NotAccountOwnerException;
 use App\Models\Transaction;
-use App\Models\User;
 use App\Traits\Transfer;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +13,6 @@ class RevertTransfer
 
     public function __construct(
         private Transaction $transaction,
-        private User $user
     ) {
         $this->payer = $transaction->accountReceiver;
         $this->receiver = $transaction->accountPayer;

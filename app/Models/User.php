@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -32,6 +33,16 @@ class User extends Authenticatable
     public function currentAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'current_account_id');
+    }
+
+    public function revertRequests(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            RevertSolicitations::class,
+            Account::class,
+            'user_id',
+            'requester_account_id',
+        );
     }
 
     public function switchAccount(Account $account): bool
