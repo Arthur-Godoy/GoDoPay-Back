@@ -21,6 +21,8 @@ class TransactionController extends Controller
     public function list(ListTransactionsRequest $request): JsonResponse
     {
         try {
+            $request->user()->populateCurrentAccountIfNull();
+
             $transactions = Transaction::query()
                 ->involvingAccount($request->user()->currentAccount)
                 ->filter($request->filters())
@@ -86,7 +88,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function show(Transaction $transaction, Request $request)
+    public function show(Transaction $transaction)
     {
         try {
             $transaction = Transaction::whereId($transaction->id)

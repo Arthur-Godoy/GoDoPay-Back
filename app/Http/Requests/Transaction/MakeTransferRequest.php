@@ -28,15 +28,15 @@ class MakeTransferRequest extends FormRequest
         return [
             'type' => ['required', Rule::enum(TransactionType::class)],
             'account_payer_id' => [
-                Rule::requiredIf($this->input('type') === TransactionType::Transfer->value),
-                Rule::prohibitedIf($this->input('type') === TransactionType::Deposit->value),
+                'required',
                 'uuid',
                 'exists:accounts,id',
             ],
             'contact_id' => [
                 'required',
                 'uuid',
-                'exists:contacts,id',
+                Rule::exists('contacts', 'id')
+                    ->where('user_id', $this->user()?->id),
             ],
             'amount' => ['required', 'integer', 'min:1', 'max:'.Account::MAX_AMOUNT_IN_CENTS],
         ];

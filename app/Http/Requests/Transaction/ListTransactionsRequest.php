@@ -9,8 +9,6 @@ use Illuminate\Validation\Rule;
 
 class ListTransactionsRequest extends FormRequest
 {
-    public const array SORTABLE_COLUMNS = ['created_at', 'amount', 'type'];
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -30,8 +28,8 @@ class ListTransactionsRequest extends FormRequest
             'type' => ['nullable', Rule::enum(TransactionType::class)],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'order_by' => ['nullable', Rule::in(self::SORTABLE_COLUMNS)],
-            'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'order_by' => ['nullable', 'in:created_at,amount,type'],
+            'order' => ['nullable', 'in:asc,desc'],
         ];
     }
 
