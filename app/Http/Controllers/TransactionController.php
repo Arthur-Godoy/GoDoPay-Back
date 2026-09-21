@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\NotAccountOwnerException;
+use App\Exceptions\SameAccountTransferException;
 use App\Http\Requests\Transaction\ListTransactionsRequest;
 use App\Http\Requests\Transaction\MakeTransferRequest;
 use App\Models\Account;
@@ -23,20 +24,16 @@ class TransactionController extends Controller
                 ->involvingAccount($request->user()->currentAccount)
                 ->filter($request->filters())
                 ->with([
-                    'accountPayer',
-                    'accountReceiver',
-                    'returnOfTransaction',
-                    'isReturnedByTransaction',
+                    'accountPayer:id,agency,number,digit',
+                    'accountReceiver:id,agency,number,digit',
                 ])
-                ->simplePaginate(15);
+                ->paginate(15);
 
             return response()->json([
                 $transactions,
             ], 200);
         } catch (\Exception $e) {
-            return response()->json([
-                'Error trying to list all transactions',
-            ], 200);
+            return response()->json('Não foi possível carregar o extrato', 400);
         }
     }
 
@@ -57,12 +54,12 @@ class TransactionController extends Controller
             $transaction = $transferService->makeTransfer();
 
             return response()->json($transaction, 200);
-        } catch (InsufficientBalanceException $e) {
-            return response()->json([$e->getMessage()], 400);
+        } catch (InsufficientBalanceException|SameAccountTransferException $e) {
+            return response()->json($e->getMessage(), 400);
         } catch (NotAccountOwnerException $e) {
-            return response()->json([$e->getMessage()], 403);
+            return response()->json($e->getMessage(), 403);
         } catch (\Exception $e) {
-            return response()->json(['Error while processing the transfer'], 400);
+            return response()->json('Não foi possível concluir a transferência', 400);
         }
     }
 
@@ -80,11 +77,26 @@ class TransactionController extends Controller
                 $revertTransaction,
             ], 200);
         } catch (NotAccountOwnerException $e) {
-            return response()->json([$e->getMessage()], 403);
+            return response()->json($e->getMessage(), 403);
         } catch (\Exception $e) {
-            return response()->json(['Error while processing the transfer'], 400);
+            return response()->json('Não foi possível concluir a transferência', 400);
         }
     }
 
-    public function show(Transaction $transaction) {}
+    public function show(Transaction $transaction, Request $request)
+    {
+        try {
+            $transaction = Transaction::whereId($transaction->id)
+                ->with([
+                    'accountPayer',
+                    'accountReceiver',
+                    'returnOfTransaction',
+                    'isReturnedByTransaction',
+                ])->first();
+
+            return response()->json($transaction, 200);
+        } catch (\Exception $e) {
+            return response()->json('Transação não encontrada', 404);
+        }
+    }
 }

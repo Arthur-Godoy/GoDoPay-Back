@@ -38,6 +38,16 @@ class Transaction extends Model
         return $this->belongsTo(Transaction::class, 'is_returned_by_transaction_id');
     }
 
+    public function alreadyReturned(): bool
+    {
+        return $this->was_returned;
+    }
+
+    public function isReturnTransaction(): bool
+    {
+        return $this->return_of_transaction_id !== null;
+    }
+
     #[Scope]
     protected function involvingAccount(Builder $query, Account $account): void
     {

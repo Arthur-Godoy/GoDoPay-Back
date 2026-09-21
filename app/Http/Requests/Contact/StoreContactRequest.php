@@ -29,9 +29,6 @@ class StoreContactRequest extends FormRequest
             'number' => [
                 'required',
                 'string',
-                Rule::exists('accounts', 'number')
-                    ->where('agency', $this->input('agency'))
-                    ->where('digit', $this->input('digit')),
             ],
         ];
     }

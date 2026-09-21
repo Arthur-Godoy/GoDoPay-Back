@@ -12,6 +12,6 @@ class AccountPolicy
      */
     public function update(User $user, Account $account): bool
     {
-        return $account->user->id == $user->id;
+        return $account->user->id === $user->id;
     }
 }

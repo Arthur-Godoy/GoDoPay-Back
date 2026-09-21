@@ -15,9 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained('users');
             $table->foreignUuid('account_id')->constrained('accounts');
-            $table->string('agency', 4);
-            $table->string('number');
-            $table->char('digit', 1);
             $table->timestamps();
 
             $table->unique(['user_id', 'account_id']);
