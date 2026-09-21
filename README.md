@@ -1,58 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GoDoPay — API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API de uma carteira digital: contas, transferências entre contatos, depósitos e estorno.
 
-## About Laravel
+Laravel 12 (PHP 8.5), MySQL e autenticação via Sanctum.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+O front que consome esta API fica no repositório `godopay-front`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Rodando
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Precisa apenas de Docker.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+docker compose up -d
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Na primeira subida o container instala as dependências, roda as migrations e popula o banco — pode levar alguns minutos.
 
-## Contributing
+| Serviço | Endereço |
+|---|---|
+| API | http://localhost:8001/api |
+| MySQL | `127.0.0.1:3307` (root / root) |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Acompanhe com `docker compose logs -f api`.
 
-## Code of Conduct
+### Usuário de teste
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+e-mail: test@example.com
+senha:  123456
+```
 
-## Security Vulnerabilities
+Nasce com duas contas ("Conta Padrão" e "Conta Secundária") e um contato entre elas, o que permite testar transferência de imediato. Os seeds são idempotentes: reiniciar o container não duplica dados.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Sem Docker
 
-## License
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve --port=8001
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Testes
+
+```bash
+php artisan test                                  # tudo
+php artisan test tests/Feature/TransactionTest.php
+php artisan test --filter=test_completes_a_transfer
+vendor/bin/phpunit                                # PHPUnit direto
+```
+
+Rodam em SQLite na memória (`phpunit.xml`), então o banco de desenvolvimento fica intacto.
+
+## Padrões
+
+**Valores em centavos.** `balance` e `amount` são `bigInteger` — R$ 10,00 é `1000`. Nunca use float para dinheiro.
+
+**Regras de negócio em Services.** `MakeTransfer`, `RevertTransfer` e `CreateAccount` concentram a lógica; os controllers só orquestram. Transferências usam `lockForUpdate()` para evitar corrida.
+
+**Validação em FormRequests**, com escopo por usuário onde faz sentido — por exemplo, `contact_id` no `MakeTransferRequest` só aceita contatos de quem está autenticado.
+
+**Mensagens de erro em português**, direto no código. Traduções de validação em `lang/pt_BR/`.
+
+**Formatação:** rode `vendor/bin/pint` antes de finalizar.
+
+## Logs
+
+Tudo em `storage/logs/laravel.log`:
+
+- Exceções, com URL, método e usuário (`bootstrap/app.php`)
+- Eventos de negócio via observers — transação, conta e contato
+
+Os observers usam `afterCommit`, então nada que sofra rollback aparece no log.
+
+```bash
+tail -f storage/logs/laravel.log
+```
+
+## Endpoints
+
+| Método | Rota | O que faz |
+|---|---|---|
+| POST | `/register` | cria usuário e primeira conta |
+| POST | `/login` | autentica |
+| POST | `/refresh` | renova o access token |
+| POST | `/logout` | revoga os tokens |
+| GET | `/me` | usuário e conta atual |
+| GET | `/accounts` | contas do usuário |
+| POST | `/account/create` | cria conta |
+| PATCH | `/switch-account/{account}` | troca a conta ativa |
+| POST | `/deposit/{account}` | deposita |
+| GET | `/contacts` | contatos |
+| POST | `/contacts` | adiciona contato por ag/conta/dígito |
+| POST | `/transfer` | transfere para um contato |
+| POST | `/return/{transaction}` | estorna |
+| GET | `/transactions` | extrato, com filtro e paginação |
+| GET | `/transactions/{transaction}` | comprovante |
+
+O access token dura 1 hora; o refresh, 1 dia. Um refresh renova o access sem prorrogar o próprio refresh, então após 24h é preciso logar de novo.
+
+## Comandos úteis
+
+```bash
+docker compose logs -f api   # acompanhar a API
+docker compose restart api   # reiniciar após mexer no .env
+docker compose down          # parar
+docker compose down -v       # parar e APAGAR o banco
+```

@@ -16,7 +16,11 @@ class AccountSeeder extends Seeder
     {
         $user = User::where('email', 'test@example.com')->firstOrFail();
 
-        Account::factory()->create([
+        if ($user->accounts()->exists()) {
+            return;
+        }
+
+        $firstAccount = Account::factory()->create([
             'user_id' => $user->id,
             'nickname' => 'Conta Padrão',
         ]);
@@ -25,6 +29,8 @@ class AccountSeeder extends Seeder
             'user_id' => $user->id,
             'nickname' => 'Conta Secundária',
         ]);
+
+        $user->switchAccount($firstAccount);
 
         Contact::factory()->create([
             'user_id' => $user->id,

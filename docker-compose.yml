@@ -1,0 +1,36 @@
+name: godopay
+
+services:
+  db:
+    image: mysql:8.4
+    container_name: godopay-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: godopay
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: .
+    image: godopay-backend
+    container_name: godopay-api
+    environment:
+      RUN_MIGRATIONS: "true"
+      FRONT_URL: "http://localhost:3001"
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

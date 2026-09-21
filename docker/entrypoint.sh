@@ -6,7 +6,7 @@ if [ ! -f vendor/autoload.php ]; then
 fi
 
 if [ "$RUN_MIGRATIONS" = "true" ]; then
-    php artisan migrate --force
+    php artisan migrate --force --seed
 fi
 
 exec "$@"

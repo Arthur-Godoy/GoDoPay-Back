@@ -15,12 +15,14 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'document' => '12345678909',
-            'document_type' => 'cpf',
-            'password' => '123456',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'document' => '12345678909',
+                'document_type' => 'cpf',
+                'password' => '123456',
+            ],
+        );
     }
 }
