@@ -24,14 +24,4 @@ class ContactFactory extends Factory
             'account_id' => Account::factory(),
         ];
     }
-
-    /**
-     * Configure the model factory.
-     */
-    public function configure(): static
-    {
-        return $this->afterMaking(function (Contact $contact) {
-            $contact->fill($contact->account->only(['agency', 'number', 'digit']));
-        });
-    }
 }

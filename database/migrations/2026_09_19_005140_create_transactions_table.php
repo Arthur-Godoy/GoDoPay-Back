@@ -23,7 +23,8 @@ return new class extends Migration
             $table->foreignUuid('return_of_transaction_id')->nullable()->constrained('transactions');
             $table->foreignUuid('is_returned_by_transaction_id')->nullable()->constrained('transactions');
             $table->timestamps();
-            $table->index(['account_id', 'created_at']);
+            $table->index(['account_receiver_id', 'created_at']);
+            $table->index(['account_payer_id', 'created_at']);
         });
     }
 

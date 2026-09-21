@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AlreadyReturnedException;
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\NotAccountOwnerException;
 use App\Exceptions\SameAccountTransferException;
@@ -78,6 +79,8 @@ class TransactionController extends Controller
             ], 200);
         } catch (NotAccountOwnerException $e) {
             return response()->json($e->getMessage(), 403);
+        } catch (AlreadyReturnedException $e) {
+            return response()->json($e->getMessage(), 400);
         } catch (\Exception $e) {
             return response()->json('Não foi possível concluir a transferência', 400);
         }

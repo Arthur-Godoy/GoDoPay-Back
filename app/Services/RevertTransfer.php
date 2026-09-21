@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\AlreadyReturnedException;
 use App\Exceptions\NotAccountOwnerException;
 use App\Models\Transaction;
 use App\Models\User;
@@ -23,6 +24,8 @@ class RevertTransfer
 
     public function makeRevert(): Transaction
     {
+        $this->validateAlreadyReturned();
+
         DB::beginTransaction();
         try {
             $this->lockAccounts();
@@ -43,6 +46,16 @@ class RevertTransfer
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
+        }
+    }
+
+    private function validateAlreadyReturned(): void
+    {
+        if (
+            $this->transaction->alreadyReturned()
+            || $this->transaction->isReturnTransaction()
+        ) {
+            throw new AlreadyReturnedException;
         }
     }
 }
