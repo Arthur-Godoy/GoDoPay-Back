@@ -7,6 +7,7 @@ Laravel 12 (PHP 8.5), MySQL e autenticação via Sanctum.
 O front que consome esta API fica no repositório `godopay-front`.
 
 ## Rodando
+Renomeie o arquivo `.env.example` para `.env`
 
 Precisa apenas de Docker.
 
@@ -16,42 +17,12 @@ docker compose up -d
 
 Na primeira subida o container instala as dependências, roda as migrations e popula o banco — pode levar alguns minutos.
 
-| Serviço | Endereço |
-|---|---|
-| API | http://localhost:8001/api |
-| MySQL | `127.0.0.1:3307` (root / root) |
-
-Acompanhe com `docker compose logs -f api`.
-
 ### Usuário de teste
 
 ```
 e-mail: test@example.com
 senha:  123456
 ```
-
-Nasce com duas contas ("Conta Padrão" e "Conta Secundária") e um contato entre elas, o que permite testar transferência de imediato. Os seeds são idempotentes: reiniciar o container não duplica dados.
-
-### Sem Docker
-
-```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve --port=8001
-```
-
-## Testes
-
-```bash
-php artisan test                                  # tudo
-php artisan test tests/Feature/TransactionTest.php
-php artisan test --filter=test_completes_a_transfer
-vendor/bin/phpunit                                # PHPUnit direto
-```
-
-Rodam em SQLite na memória (`phpunit.xml`), então o banco de desenvolvimento fica intacto.
 
 ## Padrões
 
@@ -99,12 +70,3 @@ tail -f storage/logs/laravel.log
 | GET | `/transactions/{transaction}` | comprovante |
 
 O access token dura 1 hora; o refresh, 1 dia. Um refresh renova o access sem prorrogar o próprio refresh, então após 24h é preciso logar de novo.
-
-## Comandos úteis
-
-```bash
-docker compose logs -f api   # acompanhar a API
-docker compose restart api   # reiniciar após mexer no .env
-docker compose down          # parar
-docker compose down -v       # parar e APAGAR o banco
-```

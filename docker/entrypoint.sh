@@ -5,8 +5,7 @@ if [ ! -f vendor/autoload.php ]; then
     composer install --no-interaction --prefer-dist
 fi
 
-if [ "$RUN_MIGRATIONS" = "true" ]; then
-    php artisan migrate --force --seed
-fi
+
+php artisan migrate --seed --force
 
 exec "$@"
