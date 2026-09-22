@@ -17,6 +17,7 @@ class RevertSolicitationsController extends Controller
     {
         try {
             $direction = $request->validated('direction');
+            $status = $request->validated('status');
 
             $solicitations = RevertSolicitations::query()
                 ->where(function (Builder $query) use ($account, $direction) {
@@ -25,15 +26,18 @@ class RevertSolicitationsController extends Controller
                         'received' => $query->where('approver_account_id', $account->id),
                     };
                 })
+                ->when($status, fn (Builder $query) => $query->where('status', $status))
                 ->with([
                     'requester:id,nickname,agency,number,digit',
                     'approver:id,nickname,agency,number,digit',
                     'transaction',
                 ])
-                ->where('status', $request->validated('status'))
-                ->get();
+                ->latest()
+                ->paginate(15);
 
-            return response()->json($solicitations, 200);
+            return response()->json([
+                $solicitations,
+            ], 200);
         } catch (\Exception $e) {
             return response()->json('Erro ao listar Solicitações de devolução', 200);
         }
