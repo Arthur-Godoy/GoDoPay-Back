@@ -54,6 +54,7 @@ class AuthController extends Controller
 
         $user->populateCurrentAccountIfNull();
 
+        $user->tokens()->delete();
         [$accessToken, $refreshToken] = $this->createTokenPair($user);
 
         return response()->json([
