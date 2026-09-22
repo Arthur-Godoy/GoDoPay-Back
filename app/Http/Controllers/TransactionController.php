@@ -91,7 +91,11 @@ class TransactionController extends Controller
     public function createRevertSolicitation(Transaction $transaction): JsonResponse
     {
         try {
-            if ($transaction->revertSolicitation()) {
+            if ($transaction->alreadyReturned() || $transaction->isReturnTransaction()) {
+                return response()->json('Transação já foi devolvida', 400);
+            }
+
+            if ($transaction->revertSolicitation()->exists()) {
                 return response()->json('Já existe solicitação para essa Transação', 400);
             }
 
