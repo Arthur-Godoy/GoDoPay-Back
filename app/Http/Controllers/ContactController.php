@@ -37,6 +37,10 @@ class ContactController extends Controller
                 return response()->json('Não foi possível encontrar a conta informada', 400);
             }
 
+            if ($account->id === $request->user()->currentAccount->id) {
+                return response()->json('Não é possivel criar um contato da própria conta', 400);
+            }
+
             $contact = Contact::firstOrCreate([
                 'account_id' => $account->id,
                 'user_id' => $request->user()->id,
