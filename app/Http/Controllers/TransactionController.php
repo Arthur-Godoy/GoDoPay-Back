@@ -95,7 +95,7 @@ class TransactionController extends Controller
                 return response()->json('Transação já foi devolvida', 400);
             }
 
-            if ($transaction->revertSolicitation()->exists()) {
+            if ($transaction->revertSolicitation()->whereStatus('pending')->exists()) {
                 return response()->json('Já existe solicitação para essa Transação', 400);
             }
 

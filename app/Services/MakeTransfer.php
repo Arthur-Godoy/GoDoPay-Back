@@ -24,11 +24,10 @@ class MakeTransfer
 
     public function makeTransfer(): Transaction
     {
-        $this->canTransfer();
-
         DB::beginTransaction();
         try {
             $this->lockAccounts();
+            $this->canTransfer();
 
             $transaction = $this->executeTransfer();
 

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[ObservedBy([TransactionObserver::class])]
 #[Fillable(['type', 'account_payer_id', 'account_receiver_id', 'amount', 'was_returned', 'returned_at', 'return_of_transaction_id', 'is_returned_by_transaction_id'])]
@@ -42,9 +42,9 @@ class Transaction extends Model
         return $this->belongsTo(Transaction::class, 'is_returned_by_transaction_id');
     }
 
-    public function revertSolicitation(): HasOne
+    public function revertSolicitation(): HasMany
     {
-        return $this->hasOne(RevertSolicitations::class);
+        return $this->hasMany(RevertSolicitations::class);
     }
 
     public function alreadyReturned(): bool
